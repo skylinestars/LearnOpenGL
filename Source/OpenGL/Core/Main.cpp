@@ -59,8 +59,8 @@ int main()
     //
     //unsigned int shaderProgram = createShaderProgram(vertexShaderSource, fragmentShaderSource);
     //unsigned int shaderProgram2 = createShaderProgram(vertexShaderSource2, fragmentShaderSource2);
-    Shader ourShader("E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/3.3.shader.vs", "E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/3.3.shader.fs");
-    Shader ourShader1("E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/3.3.shader1.vs", "E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/3.3.shader1.fs");
+    Shader ourShader("E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/shader.vs", "E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/shader.fs");
+    Shader ourShader1("E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/shader1.vs", "E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/shader1.fs");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
