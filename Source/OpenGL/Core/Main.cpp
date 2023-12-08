@@ -2,47 +2,14 @@
 #include <glad/glad.h>
 #include <iostream>
 #include "./Shader.h"
-
+#include "../Tools/FileTools.h"
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 aColor;\n"
-"out vec3 ourColor;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos, 1.0);\n"
-"   ourColor = aColor;\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"in vec3 ourColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(ourColor, 1.0f);\n"
-"}\n\0";
-
-
-const char* vertexShaderSource2 = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-const char* fragmentShaderSource2 = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"uniform vec4 outcolor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = outcolor;\n"
-"}\n\0";
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-unsigned int createShaderProgram(const char* vertexShaderSource, const char* fragmentShaderSource);
 void setVetex(
     unsigned int VAO, unsigned int VBO, unsigned int EBO, 
     float vertices[], long long int verticesSize, 
@@ -56,11 +23,15 @@ int main()
     {
         return -1;
     }
-    //
-    //unsigned int shaderProgram = createShaderProgram(vertexShaderSource, fragmentShaderSource);
-    //unsigned int shaderProgram2 = createShaderProgram(vertexShaderSource2, fragmentShaderSource2);
-    Shader ourShader("E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/shader.vs", "E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/shader.fs");
-    Shader ourShader1("E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/shader1.vs", "E:/Project/VSWorkspace/learn/LearnOpenGL/bin/GLSL/shader1.fs");
+    
+    std::string programDir = FileTools::getProgramDir();
+    std::string vsPath = programDir + "/GLSL/shader.vs";
+    std::string fsPath = programDir + "/GLSL/shader.fs";
+    Shader ourShader(vsPath.c_str(), fsPath.c_str());
+
+    vsPath = programDir + "/GLSL/shader1.vs";
+    fsPath = programDir + "/GLSL/shader1.fs";    
+    Shader ourShader1(vsPath.c_str(), fsPath.c_str());
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
@@ -116,9 +87,13 @@ int main()
 
         glUseProgram(ourShader1.ID);
         float timeValue = glfwGetTime();
-        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+        float redValue = (sin(timeValue) / 2.0f) + 0.5f;
+        float greenValue = (sin(timeValue*2) / 2.0f) + 0.5f;
+        float blueValue = (sin(timeValue*4) / 2.0f) + 0.5f;
+        float xfloat = sin(timeValue) / 2.0f-0.5f;
         int vertexColorLocation = glGetUniformLocation(ourShader1.ID, "outcolor");
-        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+        glUniform4f(vertexColorLocation, redValue, greenValue,blueValue, 1.0f);
+        ourShader1.setFloat("xfloat", xfloat);
         glBindVertexArray(VAOs[1]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
        
@@ -186,10 +161,10 @@ void setVetex(unsigned int VAO, unsigned int VBO, unsigned int EBO,
 {
     //1、绑定顶点数组对象
     glBindVertexArray(VAO);
-    // 2. 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
+    // 2. 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用（存储顶点）
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
-    // 3、复制我们的索引数组到一个索引缓冲中，供OpenGL使用
+    // 3、复制我们的索引数组到一个索引缓冲中，供OpenGL使用（存储顶点的索引）
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
     
@@ -209,50 +184,6 @@ void setVetex(unsigned int VAO, unsigned int VBO, unsigned int EBO,
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
     }
-}
-
-unsigned int createShaderProgram(const char* vertexShaderSource, const char* fragmentShaderSource)
-{
-    // build and compile our shader program
-   // ------------------------------------
-   // vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // fragment shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // link shaders
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    return shaderProgram;
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
