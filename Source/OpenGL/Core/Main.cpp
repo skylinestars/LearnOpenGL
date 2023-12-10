@@ -29,9 +29,9 @@ int main()
     std::string fsPath = programDir + "/GLSL/shader.fs";
     Shader ourShader(vsPath.c_str(), fsPath.c_str());
 
-    vsPath = programDir + "/GLSL/shader1.vs";
-    fsPath = programDir + "/GLSL/shader1.fs";    
-    Shader ourShader1(vsPath.c_str(), fsPath.c_str());
+    std::string vsPath1 = programDir + "/GLSL/shader1.vs";
+    std::string fsPath1 = programDir + "/GLSL/shader1.fs";
+    Shader ourShader1(vsPath1.c_str(), fsPath1.c_str());
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
@@ -69,6 +69,8 @@ int main()
 
     // render loop
     // -----------
+    int type = 0;
+    int loopNum = 0;
     while (!glfwWindowShouldClose(window))
     {
         // input
@@ -83,6 +85,7 @@ int main()
 
         glUseProgram(ourShader.ID);
         glBindVertexArray(VAOs[0]);
+        ourShader.setInt("type",type);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glUseProgram(ourShader1.ID);
@@ -104,6 +107,18 @@ int main()
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
+        
+        loopNum++;
+        if (loopNum>20)
+        {
+            loopNum = 0;
+            type++;
+        }
+        
+        if (type==3)
+        {
+            type = 0;
+        }
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
