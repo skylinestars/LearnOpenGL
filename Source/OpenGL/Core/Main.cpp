@@ -3,6 +3,9 @@
 #include <iostream>
 #include "./Shader.h"
 #include "../Tools/FileTools.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "../Tools/stb_image.h"
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -29,20 +32,20 @@ int main()
     std::string fsPath = programDir + "/GLSL/shader.fs";
     Shader ourShader(vsPath.c_str(), fsPath.c_str());
 
-    std::string vsPath1 = programDir + "/GLSL/shader1.vs";
-    std::string fsPath1 = programDir + "/GLSL/shader1.fs";
+    std::string vsPath1 = programDir + "/GLSL/shader1.vs"; 
+    std::string fsPath1 = programDir + "/GLSL/shader1.fs"; 
     Shader ourShader1(vsPath1.c_str(), fsPath1.c_str());
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-         0.0f,  1.0f, 0.0f,  1.0f,0.0f,0.0f, // top right
-         0.0f,  0.0f, 0.0f,  0.0f,1.0f,0.0f,// bottom right
-        -1.0f,  0.0f, 0.0f,  0.0f,0.0f,1.0f,// bottom left
-        -1.0f,  1.0f, 0.0f,   0.0f,0.0f,0.0f// top left 
+         0.0f, 1.0f, 0.0f,  1.0f,0.0f, 0.0f, 1.0f, 1.0f,// top right
+         0.0f, 0.0f, 0.0f,  0.0f,1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+        -1.0f, 0.0f, 0.0f,  0.0f,0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+        -1.0f, 1.0f, 0.0f,  0.0f,0.0f, 0.0f, 0.0f, 1.0f// top left  
     };
     unsigned int indices[] = {  // note that we start from 0!
-        0, 2, 3,  // first Triangle
-        0, 1, 2 // second Triangle
+        0, 1, 3,  // first Triangle
+        1, 2, 3 // second Triangle
     };
 
     float vertices2[] = {
@@ -60,6 +63,56 @@ int main()
     setVetex(VAOs[0], VBOs[0], EBO, vertices, sizeof(vertices), indices, sizeof(indices),true);
     setVetex(VAOs[1], VBOs[1], EBO, vertices2, sizeof(vertices2), indices, sizeof(indices));
 
+    unsigned int texture1, texture2;
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(2);
+    std::string wallPath = programDir + "/Texture/wall.jpg";
+    unsigned char* data = stbi_load(wallPath.c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    std::string awesomefacePath = programDir + "/Texture/awesomeface.png";
+    data = stbi_load(awesomefacePath.c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+   
+    ourShader.use();
+    glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
+    ourShader.setInt("texture2", 1);
     //可以解绑VBO，因为调用glvertexattributpointer，已将VBO注册为当前绑定的顶点缓冲区对象，所以可以安全的解除绑定
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
     //当前不使用VAO
@@ -83,10 +136,20 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
 
-        glUseProgram(ourShader.ID);
+        /*glUseProgram(ourShader.ID);
         glBindVertexArray(VAOs[0]);
         ourShader.setInt("type",type);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
+        // bind textures on corresponding texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+        // render container
+        ourShader.use();
+        glBindVertexArray(VAOs[0]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 
         glUseProgram(ourShader1.ID);
         float timeValue = glfwGetTime();
@@ -190,8 +253,11 @@ void setVetex(unsigned int VAO, unsigned int VBO, unsigned int EBO,
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
 
-        glVertexAttribPointer(1,3,GL_FLOAT, GL_FALSE, 6*sizeof(float),(void*)(sizeof(float)*3));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float),(void*)(sizeof(float)*3));
         glEnableVertexAttribArray(1);
+
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
     }
     else
     {
