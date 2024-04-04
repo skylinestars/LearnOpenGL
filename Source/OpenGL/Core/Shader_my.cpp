@@ -1,10 +1,10 @@
-#include "Shader.h"
+#include "Shader_my.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <glad/glad.h>
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath):
+Shader_my::Shader_my(const char* vertexPath, const char* fragmentPath):
 	ID(0)
 {
 	//1、读取Shade文件
@@ -31,7 +31,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath):
 		fragmentCode = fShaderStream.str();
 	}catch(std::ifstream::failure& e)
 	{
-		std::cout << "ERROR:Shader::File_not_successfully_read::" << e.what() <<std::endl;
+		std::cout << "ERROR:Shader_my::File_not_successfully_read::" << e.what() <<std::endl;
 	}
 	const char* vShaderCode = vertexCode.c_str();
 	const char* fShaderCode = fragmentCode.c_str();
@@ -39,27 +39,27 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath):
 	compileShaders(vShaderCode, fShaderCode);
 }
 
-void Shader::use()
+void Shader_my::use()
 {
 	glUseProgram(ID);
 }
 
-void Shader::setBool(const std::string& name, bool value) const
+void Shader_my::setBool(const std::string& name, bool value) const
 {
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 }
 
-void Shader::setInt(const std::string& name, int value) const
+void Shader_my::setInt(const std::string& name, int value) const
 {
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::setFloat(const std::string& name, float value) const
+void Shader_my::setFloat(const std::string& name, float value) const
 {
 	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::compileShaders(const char* vertexCode, const char* fragmentCode)
+void Shader_my::compileShaders(const char* vertexCode, const char* fragmentCode)
 {
 	unsigned int vertex, fragment;
 	//构建顶点着色器
@@ -83,7 +83,7 @@ void Shader::compileShaders(const char* vertexCode, const char* fragmentCode)
 	glDeleteShader(fragment);
 }
 
-void Shader::checkCompileError(unsigned int shader, bool isShader)
+void Shader_my::checkCompileError(unsigned int shader, bool isShader)
 {
 	int success;
 	char infoLog[1024];

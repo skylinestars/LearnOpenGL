@@ -19,10 +19,18 @@ set_target_properties( ${TARGET_NAME} PROPERTIES
 target_include_directories(${TARGET_NAME} PUBLIC 
 						${CMAKE_SOURCE_DIR}/Source 
 						${CMAKE_SOURCE_DIR}/Source/ThirdParty/glfw3/include 
-						${CMAKE_SOURCE_DIR}/Source/ThirdParty/glad/include)
+						${CMAKE_SOURCE_DIR}/Source/ThirdParty/glad/include
+						${CMAKE_SOURCE_DIR}/Source/ThirdParty/glm/include
+						${CMAKE_SOURCE_DIR}/Source/ThirdParty/assimp/include)
 # set link
-target_link_libraries( ${TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/Source/ThirdParty/glfw3/lib/glfw3.lib opengl32.lib)
+target_link_libraries( ${TARGET_NAME} PUBLIC 
+						${CMAKE_SOURCE_DIR}/Source/ThirdParty/glfw3/lib/glfw3.lib 
+						opengl32.lib
+						${CMAKE_SOURCE_DIR}/Source/ThirdParty/assimp/lib/x64/assimp-vc143-mt.lib
+						)
 # copy resource
 add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_SOURCE_DIR}/bin $<TARGET_FILE_DIR:${TARGET_NAME}>)
+
+file(COPY ${CMAKE_SOURCE_DIR}/Source/ThirdParty/assimp/bin/x64/assimp-vc143-mt.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin)
