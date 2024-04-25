@@ -164,7 +164,7 @@ private:
         // 4. height maps
         std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
+        
         // return a mesh object created from the extracted mesh data
         return Mesh(vertices, indices, textures);
     }
