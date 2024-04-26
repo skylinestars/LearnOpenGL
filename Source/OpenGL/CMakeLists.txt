@@ -18,6 +18,7 @@ set_target_properties( ${TARGET_NAME} PROPERTIES
 # set include
 target_include_directories(${TARGET_NAME} PUBLIC 
 						${CMAKE_SOURCE_DIR}/Source 
+						${CMAKE_SOURCE_DIR}/Source/ThirdParty/gl/include 
 						${CMAKE_SOURCE_DIR}/Source/ThirdParty/glfw3/include 
 						${CMAKE_SOURCE_DIR}/Source/ThirdParty/glad/include
 						${CMAKE_SOURCE_DIR}/Source/ThirdParty/glm/include
